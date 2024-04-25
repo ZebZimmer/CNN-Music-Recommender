@@ -2,3 +2,4 @@ millionsongsubset/
 fma_metadata/
 *.pyc
 __pycache__/
+train_triplets.txt
