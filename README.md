@@ -5,6 +5,9 @@ Zeb Zimmer
 Hamza Khan
 
 ## Paper Citation and Link
+Find the paper here:
+https://proceedings.neurips.cc/paper_files/paper/2013/file/b3ba8f1bee1238a2f37603d90b58898d-Paper.pdf
+
 ### Bibtex
 @inproceedings{NIPS2013_b3ba8f1b,
  author = {van den Oord, Aaron and Dieleman, Sander and Schrauwen, Benjamin},
