@@ -13,7 +13,7 @@ from utils.constants import (
 )
 
 class WMF_Model(WMF):
-    def __init__(self, k=200, learning_rate=0.001, max_iter=100, verbose=True):
+    def __init__(self, k=50, learning_rate=0.001, max_iter=100, verbose=True):
         super().__init__(k=k, learning_rate=learning_rate, max_iter=max_iter, verbose=verbose)
         self.train_set = None
 
@@ -31,5 +31,5 @@ class WMF_Model(WMF):
         df_train_triplets = pd.read_csv(DEFAULT_DATA_LOCATION, sep='\t', header=None, names=[DEFAULT_USER_COL, DEFAULT_ITEM_COL, DEFAULT_RATING_COL])
         print(df_train_triplets.head())
         self.train_set = self.prepare_cornac_data(df_train_triplets)
-        print("Done preparing dataset, now testing")
+        print("Done preparing dataset, now training")
         self.fit(self.train_set)
