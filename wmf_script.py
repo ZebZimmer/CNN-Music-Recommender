@@ -5,7 +5,7 @@ import pandas as pd
 import cornac
 from cornac.models import WMF
 
-from utils.constants import (
+from utilities.constants import (
     DEFAULT_USER_COL,
     DEFAULT_ITEM_COL,
     DEFAULT_RATING_COL,
@@ -22,13 +22,13 @@ class WMF_Model(WMF):
             data[[DEFAULT_USER_COL, DEFAULT_ITEM_COL, DEFAULT_RATING_COL]].itertuples(index=False)
         )
 
-    def train_cornac(self):
+    def train_cornac(self, data=DEFAULT_DATA_LOCATION):
         '''
         Get the raw dataset (train_triplets.txt) from the default location. Then parse it into a pandas dataframe.
         Pass the dataframe to cornac's Dataset builder function .fromuir()
         Train the model on that Dataset.
         '''
-        df_train_triplets = pd.read_csv(DEFAULT_DATA_LOCATION, sep='\t', header=None, names=[DEFAULT_USER_COL, DEFAULT_ITEM_COL, DEFAULT_RATING_COL])
+        df_train_triplets = pd.read_csv(data, sep='\t', header=None, names=[DEFAULT_USER_COL, DEFAULT_ITEM_COL, DEFAULT_RATING_COL])
         print(df_train_triplets.head())
         self.train_set = self.prepare_cornac_data(df_train_triplets)
         print("Done preparing dataset, now training")
