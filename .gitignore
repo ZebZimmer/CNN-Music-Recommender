@@ -3,4 +3,4 @@ fma_metadata/
 *.pyc
 __pycache__/
 CNNenv/
-WMF_model/
+Saved_Models/
