@@ -3,10 +3,9 @@ from tensorflow.keras import layers, models
 from tensorflow.keras.callbacks import LambdaCallback
 import matplotlib.pyplot as plt
 
-import tensorflow as tf
-from tensorflow.keras import layers, models
-from tensorflow.keras.callbacks import LambdaCallback
-import matplotlib.pyplot as plt
+from utilities.constants import(
+    CNN_SAVED_MODEL_LOCATION
+)
 
 # A CNN that takes in a 128x259 mel-spectrogram and outputs a 50 dimensional latent factor vector
 class LFV_CNN:
@@ -34,7 +33,7 @@ class LFV_CNN:
         save_val_loss_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: self.save_and_print_loss(epoch, logs))
 
         self.model.fit(train_songs, train_labels, epochs=epochs, validation_data=(validation_songs, validation_labels), callbacks=[save_val_loss_callback])
-        self.model.save(f"CNN_Test")
+        self.model.save(f"{CNN_SAVED_MODEL_LOCATION}/CNN_TEST.keras")
 
         plt.plot(self.validation_losses, color="red", label="Validation Loss")
         plt.plot(self.regular_losses, color="blue", label="Regular Loss")

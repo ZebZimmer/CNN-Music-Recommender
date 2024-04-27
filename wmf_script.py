@@ -9,7 +9,7 @@ from utilities.constants import (
     DEFAULT_USER_COL,
     DEFAULT_ITEM_COL,
     DEFAULT_RATING_COL,
-    DEFAULT_DATA_LOCATION,
+    TRIPLET_DATA_LOCATION,
 )
 
 class WMF_Model(WMF):
@@ -22,7 +22,7 @@ class WMF_Model(WMF):
             data[[DEFAULT_USER_COL, DEFAULT_ITEM_COL, DEFAULT_RATING_COL]].itertuples(index=False)
         )
 
-    def train_cornac(self, data=DEFAULT_DATA_LOCATION):
+    def train_cornac(self, data=TRIPLET_DATA_LOCATION):
         '''
         Get the raw dataset (train_triplets.txt) from the default location. Then parse it into a pandas dataframe.
         Pass the dataframe to cornac's Dataset builder function .fromuir()
