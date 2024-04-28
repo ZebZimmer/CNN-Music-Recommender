@@ -21,7 +21,7 @@ TINY_DATA_LOCATION = "../Datasets/train_triplets/train_triplets_tiny.txt"
 DEFAULT_FMA_METADATA_LOCATION = "../Datasets/fma_metadata"
 SMALL_FMA_SONG_LOCATION = "../Datasets/fma_small"
 MILLION_SONG_CSV_LOCATION = "../Datasets/million_song_data.csv"
-CNN_SAVED_MODEL_LOCATION = "Saved_Models"
+SAVED_MODEL_LOCATION = "Saved_Models"
 
 ############ Set these locations intentionally ############
 TRIPLET_DATA_LOCATION = BEST_DATA_LOCATION

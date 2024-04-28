@@ -2,14 +2,20 @@ import os
 import numpy as np
 import pandas as pd
 import hd5f_getters as GETTERS
+import librosa
+import librosa.display
+import matplotlib.pyplot as plt
 from tqdm import tqdm
 
+
 import utils
+from wmf_script import WMF_Model
 from utilities.constants import(
     DEFAULT_FMA_METADATA_LOCATION,
     FMA_SONG_LOCATION,
     TRIPLET_DATA_LOCATION,
     MILLION_SONG_CSV_LOCATION,
+    SAVED_MODEL_LOCATION,
     DEFAULT_DATA_LOCATION,
     TINY_DATA_LOCATION
 )
@@ -20,6 +26,10 @@ class DatasetMaster():
         self.df_million_song = None
         self.matched_tracks = None
         self.master_df = self.create_master()
+        
+        self.WMF = WMF_Model()
+        self.WMF = self.WMF.load(SAVED_MODEL_LOCATION+"/WMF/wmf_on_best_TT.pkl")
+        self.CNN_Train_Data = self.create_CNN_data()
         
     def create_master(self):
         self.create_train_triplets()
@@ -81,8 +91,7 @@ class DatasetMaster():
         self.matched_tracks = pd.merge(self.df_million_song, fma_tracks, on=['track_title'], how='inner')
         
         print(f"Found: {self.matched_tracks.shape[0]} songs between the free music archive (full track list), train_triplets and the million song dataset")
-    
-    
+
     def get_filenames(self):
         # Get every track that is in the FMA Song location
         fma_tracks = []
@@ -90,8 +99,8 @@ class DatasetMaster():
             for file in files:
                 fma_tracks.append(int(file[:-4]))
         return fma_tracks
-    
-    def find_fma_song(fma_track_index):
+
+    def find_fma_song(self, fma_track_index):
         # Given the fma_track index return a path to the actual mp3 of the song
         folder = str(fma_track_index // 1000)
         
@@ -103,8 +112,62 @@ class DatasetMaster():
         
         location = f"{FMA_SONG_LOCATION}/{folder}/{filename}"
         return location
-
     
+    def create_mel_spectrogram(self, audio_path, offset=0, duration=None, n_mels=128, hop_length=512, win_length=1024, plot=False):
+        '''
+        Take in the path to an MP3 and use the librosa library to do an FFT (I think) and
+        convert the raw audio into an audio time series.
+        The time series goes into a function that computes a mel-scaled spectogram
+        The power spectrogram (amplitude squared) then gets converted to decibel (dB) units
+        https://pnsn.org/spectrograms/what-is-a-spectrogram is helpful
+        
+        Returned is the decibel scaled spectrogram for the CNN
+        '''
+        y, sr = librosa.load(audio_path, sr=None, offset=offset, duration=duration)  # keeps original sampling rate. offset is when to start loading and dur. is how long
+
+        S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=n_mels, hop_length=hop_length, win_length=win_length)
+
+        S_dB = librosa.power_to_db(S, ref=np.max)
+
+        if plot:
+            plt.figure(figsize=(10, 4))
+            librosa.display.specshow(S_dB, sr=sr, hop_length=hop_length, x_axis='time', y_axis='mel')
+            plt.colorbar(format='%+2.0f dB')
+            plt.title('Mel-frequency spectrogram')
+            plt.tight_layout()
+            plt.show()
+
+        return S_dB
+    
+    def create_CNN_data(self):        
+        count = 0
+        total = len(self.master_df['track_id'])
+        train_data = [[], [], [], []] # train_data, train_label, val_data, val, label
+        
+        for song in self.master_df.iterrows():
+            index_into_fma_track_df = song[1]['index_into_fma_track_df']
+            train_data_single = self.create_mel_spectrogram(self.find_fma_song(index_into_fma_track_df), offset=np.random.randint(0,20), duration=3)
+            
+            index_into_TT = -1
+            
+            for index, million_song in enumerate(self.df_million_song.to_numpy()):
+                if million_song[0] == song[1]['track_id'] and million_song[1] == song[1]['track_title']:
+                    index_into_TT = index
+            if index_into_TT == -1:
+                raise Exception
+            
+            count += 1
+            if np.array(train_data_single).shape[1] != 259:
+                break
+            if count < (0.8 * total):
+                train_data[0].append(np.array(train_data_single))
+                train_data[1].append(self.WMF.get_item_vectors()[index_into_TT])
+            else:
+                train_data[2].append(np.array(train_data_single))
+                train_data[3].append(self.WMF.get_item_vectors()[index_into_TT])
+        
+        return train_data
+
     def test_one_file(self, filepath: str) -> None:
         """
         Playing around to see what we can pull out of one file.
