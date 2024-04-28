@@ -33,7 +33,7 @@ class LFV_CNN:
         save_val_loss_callback = LambdaCallback(on_epoch_end=lambda epoch, logs: self.save_and_print_loss(epoch, logs))
 
         self.model.fit(train_songs, train_labels, epochs=epochs, validation_data=(validation_songs, validation_labels), callbacks=[save_val_loss_callback])
-        self.model.save(f"{CNN_SAVED_MODEL_LOCATION}/CNN_TEST.keras")
+        self.model.save(f"{CNN_SAVED_MODEL_LOCATION}/CNN_Trained_on_best_TT.keras")
 
         plt.plot(self.validation_losses, color="red", label="Validation Loss")
         plt.plot(self.regular_losses, color="blue", label="Regular Loss")

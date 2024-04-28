@@ -2,6 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 import hd5f_getters as GETTERS
+from tqdm import tqdm
 
 import utils
 from utilities.constants import(
@@ -9,6 +10,8 @@ from utilities.constants import(
     FMA_SONG_LOCATION,
     TRIPLET_DATA_LOCATION,
     MILLION_SONG_CSV_LOCATION,
+    DEFAULT_DATA_LOCATION,
+    TINY_DATA_LOCATION
 )
 
 class DatasetMaster():
@@ -156,4 +159,19 @@ class DatasetMaster():
                     h5.close()
 
         return pd.DataFrame(play_data, columns=['track_id', 'track_title', 'artist_name', 'play_count'])
+    
+    def get_WMF_compatible_tracks(self):
+        # Create a intersection of train triple songs and songs in the FMA audio samples
+        # df_all_triplet_songs = pd.read_csv(TRIPLET_DATA_LOCATION, sep='\t', header=None, names=['userID', 'fma_track_id', 'rating'])
+        intersection_tt_MSD_songs = []
+        
+        self.create_million_song()
+        print(self.df_million_song.columns)
+        million_song_list = list(self.df_million_song['track_id'])
+  
+        for song in tqdm(million_song_list):
+            if song in million_song_list:
+                intersection_tt_MSD_songs.append(song)
+        
+        return intersection_tt_MSD_songs
 

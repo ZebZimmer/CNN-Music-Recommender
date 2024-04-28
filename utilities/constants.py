@@ -15,6 +15,7 @@ DEFAULT_SPLIT_FLAG = "split_flag"
 DEFAULT_TEST_SIZE = 0.2
 DEFAULT_VAL_SIZE = 0.2
 DEFAULT_DATA_LOCATION = "../Datasets/train_triplets/train_triplets.txt"
+BEST_DATA_LOCATION = "../Datasets/train_triplets/train_triplets_best.txt"
 SMALL_DATA_LOCATION = "../Datasets/train_triplets/train_triplets_small.txt"
 TINY_DATA_LOCATION = "../Datasets/train_triplets/train_triplets_tiny.txt"
 DEFAULT_FMA_METADATA_LOCATION = "../Datasets/fma_metadata"
@@ -23,5 +24,5 @@ MILLION_SONG_CSV_LOCATION = "../Datasets/million_song_data.csv"
 CNN_SAVED_MODEL_LOCATION = "Saved_Models"
 
 ############ Set these locations intentionally ############
-TRIPLET_DATA_LOCATION = TINY_DATA_LOCATION
+TRIPLET_DATA_LOCATION = BEST_DATA_LOCATION
 FMA_SONG_LOCATION = SMALL_FMA_SONG_LOCATION
