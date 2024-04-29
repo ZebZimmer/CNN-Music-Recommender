@@ -34,7 +34,7 @@ These predicted LFVs were tested by creating recommendations through finding sim
 
 ## Plan & Status
 ### TODO List
-Use WMF to generate ground truth (LFVs for songs) from the Million Song Dataset(1). We plan on using the WMF mdoel from Cornac(2).
+Use WMF to generate ground truth (LFVs for songs) from the Million Song Dataset(1). We plan on using the WMF model from Cornac(2).
 Gather audio clips from a dataset(3). Replicate the paper's way of preprocessing the audio for CNN training.
 
 Design and adapt a CNN architecture to generate LFV from audio samples. (The paper does not give code nor the architecture of their CNN.)

@@ -4,3 +4,4 @@ fma_metadata/
 __pycache__/
 CNNenv/
 Saved_Models/
+train_data/
