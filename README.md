@@ -8,6 +8,13 @@ Hamza Khan
 Find the paper here:
 https://proceedings.neurips.cc/paper_files/paper/2013/file/b3ba8f1bee1238a2f37603d90b58898d-Paper.pdf
 
+## Instructions
+Usage is not recommended. Rather, look at the notebooks to follow the thought process without having to set up your environment!
+However, if you'd like to try, follow these steps:
+1. Look at `utilities/constants.py` and recreate your data directory as described by that file.
+2. Install requirements from `requirements.txt`: `pip install -r requirements.txt`.
+3. If your data is setup, `cnn_trainer.ipynb` should hopefully run and you can see the results.
+
 ### Bibtex
 @inproceedings{NIPS2013_b3ba8f1b,
  author = {van den Oord, Aaron and Dieleman, Sander and Schrauwen, Benjamin},
