@@ -4,6 +4,8 @@ import pandas as pd
 import hd5f_getters as GETTERS
 import librosa
 import librosa.display
+import soundfile
+import audioread
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 
@@ -105,7 +107,13 @@ class DatasetMaster():
         folder = str(fma_track_index // 1000)
         
         filename = str(fma_track_index)
-        if fma_track_index < 100000:
+        if fma_track_index < 1000:
+            folder = f"000"
+            filename = f"000{filename}"
+        elif fma_track_index < 10000:
+            folder = f"00{folder}"
+            filename = f"00{filename}"
+        elif fma_track_index < 100000:
             folder = f"0{folder}"
             filename = f"0{filename}"
         filename += ".mp3"
@@ -123,7 +131,11 @@ class DatasetMaster():
         
         Returned is the decibel scaled spectrogram for the CNN
         '''
-        y, sr = librosa.load(audio_path, sr=None, offset=offset, duration=duration)  # keeps original sampling rate. offset is when to start loading and dur. is how long
+        try:
+            y, sr = librosa.load(audio_path, sr=None, offset=offset, duration=duration)  # keeps original sampling rate. offset is when to start loading and dur. is how long
+        except (soundfile.LibsndfileError, audioread.NoBackendError) as e:
+            # print(f"Bad file at: {audio_path} - Error: {e}")
+            return None
 
         S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=n_mels, hop_length=hop_length, win_length=win_length)
 
@@ -137,17 +149,37 @@ class DatasetMaster():
             plt.tight_layout()
             plt.show()
 
-        return S_dB
+        return S_dB.astype(np.float16)
     
     def create_CNN_data(self):        
         count = 0
         total = len(self.master_df['track_id'])
         train_data = [[], [], [], []] # train_data, train_label, val_data, val, label
-        
-        for song in self.master_df.iterrows():
-            index_into_fma_track_df = song[1]['index_into_fma_track_df']
-            train_data_single = self.create_mel_spectrogram(self.find_fma_song(index_into_fma_track_df), offset=np.random.randint(0,20), duration=3)
+        if os.path.exists('train_data') and 0:
+            print("LOADING THE DATA FROM TEXT FILES")
+            train_data = [np.empty((18503, 128, 259)), np.empty((18503, 50)), np.empty((2230, 128, 259)), np.empty((2230, 50))]
+            for _, _, files in os.walk('train_data'):
+                for file in files:
+                    indices = file[:-4].split("_")
+                    train_data[int(indices[0])][int(indices[1])] = np.loadtxt(f"train_data/{file}", dtype=np.float16)
+            return train_data
+
+        for song in tqdm(self.master_df.iterrows(), total=self.master_df.shape[0]):
+            count += 1
             
+            index_into_fma_track_df = song[1]['index_into_fma_track_df']
+            song_pieces = []
+            for start in range(0, 30, 5):
+                train_data_single = self.create_mel_spectrogram(self.find_fma_song(index_into_fma_track_df), offset=start, duration=3)
+                
+                if train_data_single is None:
+                    break
+                if train_data_single.shape[1] != 259:
+                    continue
+                
+                song_pieces.append(train_data_single)
+                count += 1
+
             index_into_TT = -1
             
             for index, million_song in enumerate(self.df_million_song.to_numpy()):
@@ -156,16 +188,25 @@ class DatasetMaster():
             if index_into_TT == -1:
                 raise Exception
             
-            count += 1
-            if np.array(train_data_single).shape[1] != 259:
-                break
-            if count < (0.8 * total):
-                train_data[0].append(np.array(train_data_single))
-                train_data[1].append(self.WMF.get_item_vectors()[index_into_TT])
-            else:
-                train_data[2].append(np.array(train_data_single))
-                train_data[3].append(self.WMF.get_item_vectors()[index_into_TT])
+            # Add to the validation data roughly 10% of all song samples
+            size = len(song_pieces)
+            val_index = -1
+            if size > 3:
+                val_index = np.random.randint(size)
+            
+            for index, song_data in enumerate(song_pieces):
+                if index == val_index:
+                    train_data[2].append(np.array(song_data))
+                    train_data[3].append(self.WMF.get_item_vectors()[index_into_TT])
+                else:
+                    train_data[0].append(np.array(song_data))
+                    train_data[1].append(self.WMF.get_item_vectors()[index_into_TT])
         
+        print(f"From {total} songs {count} data samples were created")
+        train_data[0] = np.array(train_data[0])
+        train_data[1] = np.array(train_data[1])
+        train_data[2] = np.array(train_data[2])
+        train_data[3] = np.array(train_data[3])
         return train_data
 
     def test_one_file(self, filepath: str) -> None:
@@ -224,14 +265,14 @@ class DatasetMaster():
         return pd.DataFrame(play_data, columns=['track_id', 'track_title', 'artist_name', 'play_count'])
     
     def get_WMF_compatible_tracks(self):
-        # Create a intersection of train triple songs and songs in the FMA audio samples
+        # Create a intersection of Million Song Dataset songs and songs in the FMA audio samples
         # df_all_triplet_songs = pd.read_csv(TRIPLET_DATA_LOCATION, sep='\t', header=None, names=['userID', 'fma_track_id', 'rating'])
         intersection_tt_MSD_songs = []
         
         self.create_million_song()
         print(self.df_million_song.columns)
         million_song_list = list(self.df_million_song['track_id'])
-  
+
         for song in tqdm(million_song_list):
             if song in million_song_list:
                 intersection_tt_MSD_songs.append(song)
